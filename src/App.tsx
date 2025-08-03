@@ -1702,12 +1702,24 @@ function App() {
         if (tasks.length > 0) {
             const { plans: newPlans } = generateNewStudyPlan(tasks, newSettings, fixedCommitments, studyPlans);
             
-            // Preserve session status from previous plan
+            // Preserve session status from previous plan and respect locked days
             newPlans.forEach(plan => {
                 const prevPlan = studyPlans.find(p => p.date === plan.date);
                 if (!prevPlan) return;
                 
-                // Preserve session status and properties
+                // Preserve lock status
+                plan.isLocked = prevPlan.isLocked;
+                
+                // If day is locked, preserve all sessions exactly as they were
+                if (prevPlan.isLocked) {
+                    plan.plannedTasks = [...prevPlan.plannedTasks];
+                    plan.totalStudyHours = prevPlan.totalStudyHours;
+                    plan.availableHours = prevPlan.availableHours;
+                    plan.isOverloaded = prevPlan.isOverloaded;
+                    return;
+                }
+                
+                // Preserve session status and properties for unlocked days
                 plan.plannedTasks.forEach(session => {
                     const prevSession = prevPlan.plannedTasks.find(s => s.taskId === session.taskId && s.sessionNumber === session.sessionNumber);
                     if (prevSession) {
