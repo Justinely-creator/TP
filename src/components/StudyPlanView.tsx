@@ -1032,14 +1032,20 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
                             className="px-2 py-1 border rounded text-xs dark:bg-gray-700 dark:border-gray-600"
                           />
                           <button
-                            onClick={handleTimeEditSave}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTimeEditSave();
+                            }}
                             className="p-1 text-green-600 hover:text-green-800 dark:text-green-400"
                             title="Save time changes"
                           >
                             <Save size={14} />
                           </button>
                           <button
-                            onClick={handleTimeEditCancel}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTimeEditCancel();
+                            }}
                             className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400"
                             title="Cancel editing"
                           >
@@ -1051,13 +1057,16 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
                           <span>{session.startTime} - {session.endTime}</span>
                           {todaysPlan.isLocked && !isDone && !isCompleted && sessionStatus !== 'missed' && (
                             <button
-                              onClick={() => handleStartTimeEdit(
-                                todaysPlan.date, 
-                                session.taskId, 
-                                session.sessionNumber || 0, 
-                                session.startTime, 
-                                session.endTime
-                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartTimeEdit(
+                                  todaysPlan.date, 
+                                  session.taskId, 
+                                  session.sessionNumber || 0, 
+                                  session.startTime, 
+                                  session.endTime
+                                );
+                              }}
                               className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 opacity-60 hover:opacity-100"
                               title="Edit session time (locked day only)"
                             >
@@ -1273,14 +1282,20 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
                                   className="px-2 py-1 border rounded text-xs dark:bg-gray-700 dark:border-gray-600"
                                 />
                                 <button
-                                  onClick={handleTimeEditSave}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleTimeEditSave();
+                                  }}
                                   className="p-1 text-green-600 hover:text-green-800 dark:text-green-400"
                                   title="Save time changes"
                                 >
                                   <Save size={12} />
                                 </button>
                                 <button
-                                  onClick={handleTimeEditCancel}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleTimeEditCancel();
+                                  }}
                                   className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400"
                                   title="Cancel editing"
                                 >
@@ -1292,13 +1307,16 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
                                 <span>{session.startTime} - {session.endTime}</span>
                                 {plan.isLocked && (
                                   <button
-                                    onClick={() => handleStartTimeEdit(
-                                      plan.date, 
-                                      session.taskId, 
-                                      session.sessionNumber || 0, 
-                                      session.startTime, 
-                                      session.endTime
-                                    )}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStartTimeEdit(
+                                        plan.date, 
+                                        session.taskId, 
+                                        session.sessionNumber || 0, 
+                                        session.startTime, 
+                                        session.endTime
+                                      );
+                                    }}
                                     className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 opacity-60 hover:opacity-100"
                                     title="Edit session time (locked day only)"
                                   >
