@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, BookOpen, TrendingUp, AlertTriangle, CheckCircle, Lightbulb, X, CheckCircle2, Clock3 } from 'lucide-react';
+import { Calendar, Clock, BookOpen, TrendingUp, AlertTriangle, CheckCircle, Lightbulb, X, CheckCircle2, Clock3, Lock, Unlock } from 'lucide-react';
 import { StudyPlan, Task, StudySession, FixedCommitment, UserSettings } from '../types'; // Added FixedCommitment to imports
 import { formatTime, generateSmartSuggestions, getLocalDateString, checkSessionStatus, getDailyAvailableTimeSlots, findNextAvailableStartTime, moveIndividualSession, redistributeMissedSessionsEnhanced, skipSessionEnhanced, validateTimeSlot } from '../utils/scheduling';
 import { RedistributionOptions } from '../types';
@@ -16,6 +16,7 @@ interface StudyPlanViewProps {
   onSkipMissedSession: (planDate: string, sessionNumber: number, taskId: string) => void;
   onRedistributeMissedSessions?: () => void; // NEW PROP for redistribution
   onEnhancedRedistribution?: () => void; // Enhanced redistribution prop
+  onToggleDayLock?: (date: string, isLocked: boolean) => void; // NEW PROP for lock toggle
 }
 
 // Force warnings UI to be hidden for all users on first load unless they have a preference
@@ -25,7 +26,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedCommitments, onSelectTask, onGenerateStudyPlan, onUndoSessionDone, settings, onAddFixedCommitment, onSkipMissedSession, onRedistributeMissedSessions, onEnhancedRedistribution }) => {
+const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedCommitments, onSelectTask, onGenerateStudyPlan, onUndoSessionDone, settings, onAddFixedCommitment, onSkipMissedSession, onRedistributeMissedSessions, onEnhancedRedistribution, onToggleDayLock }) => {
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const [] = useState<{ taskTitle: string; unscheduledMinutes: number } | null>(null);
   const [showRegenerateConfirmation, setShowRegenerateConfirmation] = useState(false);
@@ -256,6 +257,19 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
       // Full skip using original method
       onSkipMissedSession(planDate, sessionNumber, taskId);
       setNotificationMessage('Session skipped! It will not be redistributed in future plans.');
+    }
+  };
+
+  // Lock day handler
+  const handleToggleDayLock = (date: string, currentLockState: boolean) => {
+    if (onToggleDayLock) {
+      onToggleDayLock(date, !currentLockState);
+      setNotificationMessage(
+        !currentLockState 
+          ? `Day locked! Sessions on ${new Date(date).toLocaleDateString()} are now protected from changes.`
+          : `Day unlocked! Sessions on ${new Date(date).toLocaleDateString()} can now be modified.`
+      );
+      setTimeout(() => setNotificationMessage(null), 3000);
     }
   };
 
@@ -702,6 +716,12 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
             <h2 className="text-xl font-semibold text-gray-800 flex items-center space-x-2 dark:text-white">
               <Calendar className="text-blue-600 dark:text-blue-400" size={24} />
               <span>Today's Sessions</span>
+              {todaysPlan.isLocked && (
+                <span className="inline-flex items-center px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full dark:bg-red-900 dark:text-red-300">
+                  <Lock size={12} className="mr-1" />
+                  Locked
+                </span>
+              )}
               {suggestions.length > 0 && (
                 <button 
                   onClick={() => setShowSmartAssistant(!showSmartAssistant)}
@@ -711,6 +731,21 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
                   <Lightbulb className="text-yellow-600 dark:text-yellow-400" size={16} />
                 </button>
               )}
+              <button 
+                onClick={() => handleToggleDayLock(todaysPlan.date, todaysPlan.isLocked || false)}
+                className={`ml-2 p-1.5 rounded-full transition-colors duration-200 ${
+                  todaysPlan.isLocked 
+                    ? 'bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800' 
+                    : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
+                }`}
+                title={todaysPlan.isLocked ? "Unlock day - Allow changes to today's sessions" : "Lock day - Protect today's sessions from changes"}
+              >
+                {todaysPlan.isLocked ? (
+                  <Lock className="text-red-600 dark:text-red-400" size={16} />
+                ) : (
+                  <Unlock className="text-gray-600 dark:text-gray-400" size={16} />
+                )}
+              </button>
             </h2>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500 dark:text-gray-300">
@@ -991,13 +1026,36 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({ studyPlans, tasks, fixedC
               .map((plan) => (
                 <div key={plan.id} className="border rounded-lg p-4 dark:bg-gray-800 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium text-gray-800 dark:text-white">
-                      {new Date(plan.date).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-medium text-gray-800 dark:text-white">
+                        {new Date(plan.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </h3>
+                      {plan.isLocked && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-red-100 text-red-800 rounded-full dark:bg-red-900 dark:text-red-300">
+                          <Lock size={10} className="mr-1" />
+                          Locked
+                        </span>
+                      )}
+                      <button 
+                        onClick={() => handleToggleDayLock(plan.date, plan.isLocked || false)}
+                        className={`p-1 rounded transition-colors duration-200 ${
+                          plan.isLocked 
+                            ? 'bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800' 
+                            : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        }`}
+                        title={plan.isLocked ? "Unlock day - Allow changes to this day's sessions" : "Lock day - Protect this day's sessions from changes"}
+                      >
+                        {plan.isLocked ? (
+                          <Lock className="text-red-600 dark:text-red-400" size={14} />
+                        ) : (
+                          <Unlock className="text-gray-600 dark:text-gray-400" size={14} />
+                        )}
+                      </button>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500 dark:text-gray-300">
                         {formatTime(plan.plannedTasks
