@@ -1803,6 +1803,29 @@ function App() {
         });
     };
 
+    const handleUpdateSessionTime = (planDate: string, taskId: string, sessionNumber: number, newStartTime: string, newEndTime: string) => {
+        setStudyPlans(prevPlans => {
+            return prevPlans.map(plan => {
+                if (plan.date === planDate) {
+                    return {
+                        ...plan,
+                        plannedTasks: plan.plannedTasks.map(session => {
+                            if (session.taskId === taskId && session.sessionNumber === sessionNumber) {
+                                return {
+                                    ...session,
+                                    startTime: newStartTime,
+                                    endTime: newEndTime
+                                };
+                            }
+                            return session;
+                        })
+                    };
+                }
+                return plan;
+            });
+        });
+    };
+
     // Interactive tutorial handlers
     const handleStartTutorial = () => {
         setShowInteractiveTutorial(true);
@@ -2146,6 +2169,7 @@ function App() {
                 onRedistributeMissedSessions={handleRedistributeMissedSessions}
                 onEnhancedRedistribution={handleEnhancedRedistribution}
                             onToggleDayLock={handleToggleDayLock}
+                            onUpdateSessionTime={handleUpdateSessionTime}
                         />
                     )}
 
