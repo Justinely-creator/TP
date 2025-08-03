@@ -368,19 +368,19 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({
                                 </div>
                                 
                                 <div className="flex items-center space-x-3">
-                                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Start Time:
-                                  </label>
-                                  <input
-                                    type="time"
-                                    value={newStartTime}
-                                    onChange={(e) => setNewStartTime(e.target.value)}
-                                    className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                  />
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    Duration: {formatTime(session.allocatedHours)}
-                                  </span>
-                                </div>
+  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+    Start Time:
+  </label>
+  <input
+    type="time"
+    value={newStartTime}
+    onChange={(e) => setNewStartTime(e.target.value)}
+    className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+  />
+  <span className="text-sm text-gray-600 dark:text-gray-400">
+    Duration: {formatTime(session.allocatedHours)} (fixed)
+  </span>
+</div>
                                 
                                 <div className="flex space-x-2">
                                   <button
@@ -468,12 +468,15 @@ const StudyPlanView: React.FC<StudyPlanViewProps> = ({
                                   {/* Edit Button - Updated Logic */}
                                   {canEdit ? (
                                     <button
-                                      onClick={() => handleEditSession(plan.date, session.sessionNumber || 0, session.taskId, session.startTime)}
-                                      className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                                      title="Edit session time"
-                                    >
-                                      <Edit size={16} />
-                                    </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    handleEditSession(plan.date, session.sessionNumber || 0, session.taskId, session.startTime);
+  }}
+  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+  title="Edit session time"
+>
+  <Edit size={16} />
+</button>
                                   ) : plan.isLocked ? (
                                     <button
                                       disabled
